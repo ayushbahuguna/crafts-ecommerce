@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
+import * as jose from 'jose'
 import { NextRequest } from 'next/server'
 
 export interface JWTPayload {
@@ -8,12 +9,30 @@ export interface JWTPayload {
   role: 'ADMIN' | 'CUSTOMER'
 }
 
+// For Node.js runtime (API routes)
 export function signToken(payload: JWTPayload): string {
   return jwt.sign(payload, process.env.JWT_SECRET!, {
     expiresIn: process.env.JWT_EXPIRES_IN || '7d',
   })
 }
 
+// For Edge Runtime compatible JWT verification (middleware)
+export async function verifyTokenEdge(token: string): Promise<JWTPayload> {
+  try {
+    const secret = new TextEncoder().encode(process.env.JWT_SECRET!)
+    const { payload } = await jose.jwtVerify(token, secret)
+    
+    return {
+      userId: payload.userId as string,
+      email: payload.email as string,
+      role: payload.role as 'ADMIN' | 'CUSTOMER'
+    }
+  } catch (error) {
+    throw new Error('Invalid token')
+  }
+}
+
+// For Node.js runtime (API routes) - secure verification
 export function verifyToken(token: string): JWTPayload {
   return jwt.verify(token, process.env.JWT_SECRET!) as JWTPayload
 }
@@ -39,7 +58,7 @@ export function getTokenFromRequest(request: NextRequest): string | null {
   return tokenFromCookie?.value || null
 }
 
-export function getUserFromRequest(request: NextRequest): JWTPayload | null {
+export async function getUserFromRequest(request: NextRequest): Promise<JWTPayload | null> {
   try {
     const token = getTokenFromRequest(request)
     if (!token) {
@@ -48,7 +67,7 @@ export function getUserFromRequest(request: NextRequest): JWTPayload | null {
     }
     
     console.log('Auth - Attempting to verify token');
-    const user = verifyToken(token)
+    const user = await verifyTokenEdge(token)
     console.log('Auth - Token verified successfully for user:', { id: user.userId, role: user.role });
     return user
   } catch (error) {

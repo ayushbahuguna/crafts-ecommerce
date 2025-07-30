@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { getUserFromRequest } from './lib/auth';
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Skip middleware for static assets and Next.js internals
@@ -12,7 +12,7 @@ export function middleware(request: NextRequest) {
 
   // Admin route protection
   if (pathname.startsWith('/api/admin') || pathname.startsWith('/admin')) {
-    const user = getUserFromRequest(request);
+    const user = await getUserFromRequest(request);
     
     // Debug logging (remove in production)
     console.log('Middleware - Admin route accessed:', pathname);
@@ -48,7 +48,7 @@ export function middleware(request: NextRequest) {
 
   // Customer route protection
   if (pathname.startsWith('/api/customer') || pathname.startsWith('/customer') || pathname.startsWith('/checkout')) {
-    const user = getUserFromRequest(request);
+    const user = await getUserFromRequest(request);
 
     if (!user) {
       if (pathname.startsWith('/api')) {
