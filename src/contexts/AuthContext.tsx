@@ -26,6 +26,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
+  // Helper function to set cookie
+  const setCookie = (name: string, value: string, days: number) => {
+    const expires = new Date(Date.now() + days * 864e5).toUTCString()
+    document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax`
+  }
+
+  // Helper function to delete cookie
+  const deleteCookie = (name: string) => {
+    document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`
+  }
+
   useEffect(() => {
     // Check for stored auth data on mount
     const storedToken = localStorage.getItem('auth-token')
@@ -34,6 +45,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (storedToken && storedUser) {
       setToken(storedToken)
       setUser(JSON.parse(storedUser))
+      // Also set in cookies for server-side access (for existing logged-in users)
+      setCookie('auth-token', storedToken, 7)
     }
     setLoading(false)
   }, [])
@@ -57,6 +70,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setToken(token)
       localStorage.setItem('auth-token', token)
       localStorage.setItem('auth-user', JSON.stringify(user))
+      // Also set in cookies for server-side access
+      setCookie('auth-token', token, 7)
     } catch (error) {
       throw error
     }
@@ -81,6 +96,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setToken(token)
       localStorage.setItem('auth-token', token)
       localStorage.setItem('auth-user', JSON.stringify(user))
+      // Also set in cookies for server-side access
+      setCookie('auth-token', token, 7)
     } catch (error) {
       throw error
     }
@@ -91,6 +108,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setToken(null)
     localStorage.removeItem('auth-token')
     localStorage.removeItem('auth-user')
+    // Also delete cookies
+    deleteCookie('auth-token')
   }
 
   return (
