@@ -5,9 +5,19 @@ import { getUserFromRequest } from './lib/auth';
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // Skip middleware for static assets and Next.js internals
+  if (pathname.startsWith('/_next') || pathname.startsWith('/favicon') || pathname.includes('.')) {
+    return NextResponse.next();
+  }
+
   // Admin route protection
   if (pathname.startsWith('/api/admin') || pathname.startsWith('/admin')) {
     const user = getUserFromRequest(request);
+    
+    // Debug logging (remove in production)
+    console.log('Middleware - Admin route accessed:', pathname);
+    console.log('Middleware - User from request:', user ? { id: user.userId, role: user.role } : 'No user');
+    console.log('Middleware - Cookies:', request.cookies.get('auth-token')?.value ? 'Token present' : 'No token');
 
     if (!user) {
       if (pathname.startsWith('/api')) {
@@ -16,6 +26,8 @@ export function middleware(request: NextRequest) {
           { status: 401 }
         );
       }
+      // For admin pages (not API), redirect to login
+      console.log('Middleware - Redirecting to login, no user found');
       return NextResponse.redirect(new URL('/login', request.url));
     }
 
@@ -26,8 +38,12 @@ export function middleware(request: NextRequest) {
           { status: 403 }
         );
       }
+      // For admin pages (not API), redirect to home
+      console.log('Middleware - Redirecting to home, user is not admin:', user.role);
       return NextResponse.redirect(new URL('/', request.url));
     }
+    
+    console.log('Middleware - Admin access granted');
   }
 
   // Customer route protection
