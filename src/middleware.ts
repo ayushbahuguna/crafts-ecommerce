@@ -31,7 +31,7 @@ export function middleware(request: NextRequest) {
   }
 
   // Customer route protection
-  if (pathname.startsWith('/api/customer') || pathname.startsWith('/profile') || pathname.startsWith('/orders') || pathname.startsWith('/checkout')) {
+  if (pathname.startsWith('/api/customer') || pathname.startsWith('/customer') || pathname.startsWith('/checkout')) {
     const user = getUserFromRequest(request);
 
     if (!user) {
@@ -53,8 +53,7 @@ export const config = {
     '/api/admin/:path*',
     '/admin/:path*',
     '/api/customer/:path*',
-    '/profile/:path*',
-    '/orders/:path*',
+    '/customer/:path*',
     '/checkout/:path*',
   ],
 };
