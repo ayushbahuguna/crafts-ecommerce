@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 
-export function createResponse(data: any, status: number = 200) {
+export function createResponse(data: unknown, status: number = 200) {
   return NextResponse.json({ success: true, data }, { status })
 }
 

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import ProductCard from '@/components/products/ProductCard'
 import ProductFilters from '@/components/products/ProductFilters'
@@ -31,7 +31,7 @@ interface Category {
   slug: string
 }
 
-export default function ProductsPage() {
+function ProductsContent() {
   const searchParams = useSearchParams()
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<Category[]>([])
@@ -164,3 +164,18 @@ export default function ProductsPage() {
   )
 }
 
+export default function ProductsPage() {
+  return (
+    <Suspense fallback={
+      <div className="bg-gray-50 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-center items-center h-96">
+            <LoadingSpinner size="lg" />
+          </div>
+        </div>
+      </div>
+    }>
+      <ProductsContent />
+    </Suspense>
+  )
+}

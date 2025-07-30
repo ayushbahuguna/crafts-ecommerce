@@ -5,10 +5,11 @@ import { createResponse, createErrorResponse } from '@/lib/api-response'
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
-    const user = getUserFromRequest(request)
+    const user = await getUserFromRequest(request)
     if (!user) {
       return createErrorResponse('Unauthorized', 401)
     }
@@ -31,7 +32,7 @@ export async function PUT(
     // Verify address ownership
     const existingAddress = await prisma.address.findFirst({
       where: {
-        id: params.id,
+        id,
         userId: user.userId
       }
     })
@@ -46,7 +47,7 @@ export async function PUT(
         where: {
           userId: user.userId,
           isDefault: true,
-          id: { not: params.id }
+          id: { not: id }
         },
         data: {
           isDefault: false
@@ -55,7 +56,7 @@ export async function PUT(
     }
 
     const updatedAddress = await prisma.address.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         name,
         phone,
@@ -77,10 +78,11 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
-    const user = getUserFromRequest(request)
+    const user = await getUserFromRequest(request)
     if (!user) {
       return createErrorResponse('Unauthorized', 401)
     }
@@ -88,7 +90,7 @@ export async function DELETE(
     // Verify address ownership
     const address = await prisma.address.findFirst({
       where: {
-        id: params.id,
+        id,
         userId: user.userId
       }
     })
@@ -99,7 +101,7 @@ export async function DELETE(
 
     // Check if address is used in any orders
     const ordersCount = await prisma.order.count({
-      where: { addressId: params.id }
+      where: { addressId: id }
     })
 
     if (ordersCount > 0) {
@@ -107,7 +109,7 @@ export async function DELETE(
     }
 
     await prisma.address.delete({
-      where: { id: params.id }
+      where: { id }
     })
 
     return createResponse({ message: 'Address deleted successfully' })

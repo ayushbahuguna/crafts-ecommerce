@@ -43,7 +43,7 @@ export default function AddressesPage() {
 
   useEffect(() => {
     fetchAddresses();
-  }, [user, token]);
+  }, []);
 
   const handleDelete = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this address?')) {

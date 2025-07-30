@@ -5,7 +5,7 @@ import { createResponse, createErrorResponse } from '@/lib/api-response'
 
 export async function POST(request: NextRequest) {
   try {
-    const user = getUserFromRequest(request)
+    const user = await getUserFromRequest(request)
     if (!user) {
       return createErrorResponse('Unauthorized', 401)
     }

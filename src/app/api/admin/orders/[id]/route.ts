@@ -5,10 +5,11 @@ import { createResponse, createErrorResponse } from '@/lib/api-response'
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
-    const user = getUserFromRequest(request)
+    const user = await getUserFromRequest(request)
     if (!user || user.role !== 'ADMIN') {
       return createErrorResponse('Unauthorized', 401)
     }
@@ -20,7 +21,7 @@ export async function PUT(
     }
 
     const order = await prisma.order.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         status
       },

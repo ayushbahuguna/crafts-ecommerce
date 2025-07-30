@@ -61,7 +61,7 @@ export default function CategoriesShowcase() {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h2 className="text-3xl font-bold text-gray-900">Shop by Category</h2>
-            <p className="text-gray-600 mt-2">Find exactly what you're looking for</p>
+            <p className="text-gray-600 mt-2">Find exactly what you&apos;re looking for</p>
           </div>
           <Link 
             href="/categories"

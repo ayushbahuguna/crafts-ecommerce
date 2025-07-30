@@ -5,10 +5,11 @@ import { createResponse, createErrorResponse } from '@/lib/api-response'
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
-    const user = getUserFromRequest(request)
+    const user = await getUserFromRequest(request)
     if (!user) {
       return createErrorResponse('Unauthorized', 401)
     }
@@ -22,7 +23,7 @@ export async function PUT(
     // Find cart item and verify ownership
     const cartItem = await prisma.cartItem.findFirst({
       where: {
-        id: params.id,
+        id,
         userId: user.userId
       },
       include: {
@@ -40,7 +41,7 @@ export async function PUT(
     }
 
     const updatedCartItem = await prisma.cartItem.update({
-      where: { id: params.id },
+      where: { id },
       data: { quantity },
       include: {
         product: {
@@ -72,10 +73,11 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
-    const user = getUserFromRequest(request)
+    const user = await getUserFromRequest(request)
     if (!user) {
       return createErrorResponse('Unauthorized', 401)
     }
@@ -83,7 +85,7 @@ export async function DELETE(
     // Verify cart item ownership
     const cartItem = await prisma.cartItem.findFirst({
       where: {
-        id: params.id,
+        id,
         userId: user.userId
       }
     })
@@ -93,7 +95,7 @@ export async function DELETE(
     }
 
     await prisma.cartItem.delete({
-      where: { id: params.id }
+      where: { id }
     })
 
     return createResponse({ message: 'Item removed from cart' })

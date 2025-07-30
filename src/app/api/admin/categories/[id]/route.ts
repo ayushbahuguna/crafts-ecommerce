@@ -5,11 +5,12 @@ import { createResponse, createErrorResponse } from '@/lib/api-response'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
     const category = await prisma.category.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         _count: {
           select: {
@@ -32,10 +33,11 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
-    const user = getUserFromRequest(request)
+    const user = await getUserFromRequest(request)
     if (!user || user.role !== 'ADMIN') {
       return createErrorResponse('Unauthorized', 401)
     }
@@ -50,7 +52,7 @@ export async function PUT(
     const existingCategory = await prisma.category.findFirst({
       where: {
         AND: [
-          { id: { not: params.id } },
+          { id: { not: id } },
           { slug }
         ]
       }
@@ -61,7 +63,7 @@ export async function PUT(
     }
 
     const category = await prisma.category.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         name,
         slug,
@@ -80,17 +82,18 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
-    const user = getUserFromRequest(request)
+    const user = await getUserFromRequest(request)
     if (!user || user.role !== 'ADMIN') {
       return createErrorResponse('Unauthorized', 401)
     }
 
     // Check if category has products
     const productsCount = await prisma.product.count({
-      where: { categoryId: params.id }
+      where: { categoryId: id }
     })
 
     if (productsCount > 0) {
@@ -98,7 +101,7 @@ export async function DELETE(
     }
 
     await prisma.category.delete({
-      where: { id: params.id }
+      where: { id }
     })
 
     return createResponse({ message: 'Category deleted successfully' })

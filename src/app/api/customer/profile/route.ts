@@ -5,7 +5,7 @@ import { createResponse, createErrorResponse } from '@/lib/api-response'
 
 export async function GET(request: NextRequest) {
   try {
-    const user = getUserFromRequest(request)
+    const user = await getUserFromRequest(request)
     if (!user) {
       return createErrorResponse('Unauthorized', 401)
     }
@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const user = getUserFromRequest(request)
+    const user = await getUserFromRequest(request)
     if (!user) {
       return createErrorResponse('Unauthorized', 401)
     }
@@ -46,7 +46,11 @@ export async function PUT(request: NextRequest) {
       return createErrorResponse('Name is required', 400)
     }
 
-    const updateData: any = {
+    const updateData: {
+      name: string;
+      phone?: string | null;
+      password?: string;
+    } = {
       name,
       phone: phone || null
     }

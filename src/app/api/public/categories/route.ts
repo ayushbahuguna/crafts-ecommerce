@@ -1,8 +1,7 @@
-import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/db'
 import { createResponse, createErrorResponse } from '@/lib/api-response'
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const categories = await prisma.category.findMany({
       where: {

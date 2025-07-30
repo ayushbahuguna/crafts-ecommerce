@@ -12,7 +12,12 @@ export async function GET(request: NextRequest) {
 
     const skip = (page - 1) * limit
 
-    const where: any = {}
+    const where: {
+      name?: {
+        contains: string;
+        mode: 'insensitive';
+      };
+    } = {}
 
     if (search) {
       where.name = {
@@ -57,7 +62,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const user = getUserFromRequest(request)
+    const user = await getUserFromRequest(request)
     if (!user || user.role !== 'ADMIN') {
       return createErrorResponse('Unauthorized', 401)
     }

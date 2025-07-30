@@ -5,17 +5,18 @@ import { createResponse, createErrorResponse } from '@/lib/api-response'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
-    const user = getUserFromRequest(request)
+    const user = await getUserFromRequest(request)
     if (!user) {
       return createErrorResponse('Unauthorized', 401)
     }
 
     const order = await prisma.order.findFirst({
       where: {
-        id: params.id,
+        id,
         userId: user.userId
       },
       include: {
@@ -67,10 +68,11 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
-    const user = getUserFromRequest(request)
+    const user = await getUserFromRequest(request)
     if (!user) {
       return createErrorResponse('Unauthorized', 401)
     }
@@ -84,7 +86,7 @@ export async function PUT(
     // Find the order
     const order = await prisma.order.findFirst({
       where: {
-        id: params.id,
+        id,
         userId: user.userId
       },
       include: {
@@ -123,7 +125,7 @@ export async function PUT(
 
           // Update order status
           return await tx.order.update({
-            where: { id: params.id },
+            where: { id },
             data: {
               status: 'CANCELLED'
             }
@@ -146,7 +148,7 @@ export async function PUT(
         }
 
         updatedOrder = await prisma.order.update({
-          where: { id: params.id },
+          where: { id },
           data: {
             status: 'RETURNED'
           }

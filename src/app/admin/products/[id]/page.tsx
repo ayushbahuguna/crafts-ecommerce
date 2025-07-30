@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import ProductForm from '../ProductForm';
 import { useAuth } from '@/contexts/AuthContext';
@@ -10,18 +10,29 @@ interface Category {
   name: string;
 }
 
+interface Product {
+  id?: string;
+  name: string;
+  slug: string;
+  description: string;
+  price: number;
+  comparePrice?: number;
+  sku: string;
+  stock: number;
+  images: string[];
+  categoryId: string;
+  isActive: boolean;
+  isFeatured: boolean;
+}
+
 export default function EditProductPage() {
-  const [product, setProduct] = useState(null);
+  const [product, setProduct] = useState<Product | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const { token } = useAuth();
   const params = useParams();
 
-  useEffect(() => {
-    Promise.all([fetchProduct(), fetchCategories()]);
-  }, []);
-
-  const fetchProduct = async () => {
+  const fetchProduct = useCallback(async () => {
     try {
       const response = await fetch(`/api/admin/products/${params.id}`, {
         headers: {
@@ -35,9 +46,9 @@ export default function EditProductPage() {
     } catch (error) {
       console.error('Error fetching product:', error);
     }
-  };
+  }, [params.id, token]);
 
-  const fetchCategories = async () => {
+  const fetchCategories = useCallback(async () => {
     try {
       const response = await fetch('/api/admin/categories');
       const data = await response.json();
@@ -49,7 +60,11 @@ export default function EditProductPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    Promise.all([fetchProduct(), fetchCategories()]);
+  }, [fetchProduct, fetchCategories]);
 
   if (loading) {
     return (
@@ -64,7 +79,7 @@ export default function EditProductPage() {
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Edit Product</h1>
       </div>
-      <ProductForm product={product} categories={categories} />
+      <ProductForm product={product || undefined} categories={categories} />
     </div>
   );
 }

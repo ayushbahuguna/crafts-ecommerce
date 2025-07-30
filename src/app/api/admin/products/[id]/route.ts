@@ -5,11 +5,12 @@ import { createResponse, createErrorResponse } from '@/lib/api-response'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
     const product = await prisma.product.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         category: {
           select: {
@@ -36,10 +37,11 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
-    const user = getUserFromRequest(request)
+    const user = await getUserFromRequest(request)
     if (!user || user.role !== 'ADMIN') {
       return createErrorResponse('Unauthorized', 401)
     }
@@ -67,7 +69,7 @@ export async function PUT(
     const existingProduct = await prisma.product.findFirst({
       where: {
         AND: [
-          { id: { not: params.id } },
+          { id: { not: id } },
           {
             OR: [
               { slug },
@@ -83,7 +85,7 @@ export async function PUT(
     }
 
     const product = await prisma.product.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         name,
         slug,
@@ -122,16 +124,17 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
-    const user = getUserFromRequest(request)
+    const user = await getUserFromRequest(request)
     if (!user || user.role !== 'ADMIN') {
       return createErrorResponse('Unauthorized', 401)
     }
 
     await prisma.product.delete({
-      where: { id: params.id }
+      where: { id }
     })
 
     return createResponse({ message: 'Product deleted successfully' })

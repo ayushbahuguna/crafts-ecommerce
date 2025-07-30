@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -9,8 +9,23 @@ interface Category {
   name: string;
 }
 
+interface Product {
+  id?: string;
+  name: string;
+  slug: string;
+  description: string;
+  price: number;
+  comparePrice?: number;
+  sku: string;
+  stock: number;
+  images: string[];
+  categoryId: string;
+  isActive: boolean;
+  isFeatured: boolean;
+}
+
 interface ProductFormProps {
-  product?: any;
+  product?: Product;
   categories: Category[];
 }
 

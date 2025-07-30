@@ -74,7 +74,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       setItems([])
       setSummary({ subtotal: 0, totalItems: 0, itemCount: 0 })
     }
-  }, [user, token])
+  }, [])
 
   const addToCart = async (productId: string, quantity: number) => {
     if (!token) throw new Error('Please login to add items to cart')

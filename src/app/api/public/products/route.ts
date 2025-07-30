@@ -19,7 +19,16 @@ export async function GET(request: NextRequest) {
     const skip = (page - 1) * limit
 
     // Build where clause
-    const where: any = {
+    const where: {
+      isActive: boolean;
+      category?: { slug: string };
+      price?: { gte?: number; lte?: number };
+      OR?: Array<{
+        name?: { contains: string; mode: 'insensitive' };
+        description?: { contains: string; mode: 'insensitive' };
+      }>;
+      isFeatured?: boolean;
+    } = {
       isActive: true
     }
 
@@ -47,7 +56,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Build orderBy
-    const orderBy: any = {}
+    const orderBy: Record<string, string> = {}
     orderBy[sortBy] = sortOrder
 
     const [products, total] = await Promise.all([

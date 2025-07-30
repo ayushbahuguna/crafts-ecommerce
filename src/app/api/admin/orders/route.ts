@@ -5,7 +5,7 @@ import { createResponse, createErrorResponse } from '@/lib/api-response'
 
 export async function GET(request: NextRequest) {
   try {
-    const user = getUserFromRequest(request)
+    const user = await getUserFromRequest(request)
     if (!user || user.role !== 'ADMIN') {
       return createErrorResponse('Unauthorized', 401)
     }
@@ -18,10 +18,19 @@ export async function GET(request: NextRequest) {
 
     const skip = (page - 1) * limit
 
-    const where: any = {}
+    const where: {
+      status?: 'PENDING' | 'CONFIRMED' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED' | 'RETURNED';
+      OR?: Array<{
+        orderNumber?: { contains: string; mode: 'insensitive' };
+        user?: {
+          name?: { contains: string; mode: 'insensitive' };
+          email?: { contains: string; mode: 'insensitive' };
+        };
+      }>;
+    } = {}
 
-    if (status) {
-      where.status = status
+    if (status && ['PENDING', 'CONFIRMED', 'SHIPPED', 'DELIVERED', 'CANCELLED', 'RETURNED'].includes(status)) {
+      where.status = status as 'PENDING' | 'CONFIRMED' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED' | 'RETURNED'
     }
 
     if (search) {

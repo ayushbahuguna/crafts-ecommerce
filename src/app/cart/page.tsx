@@ -20,7 +20,7 @@ export default function CartPage() {
       <div className="min-h-screen flex flex-col items-center justify-center text-center bg-gray-50">
         <ShoppingCart className="h-16 w-16 text-gray-400 mb-4" />
         <h2 className="text-2xl font-bold text-gray-900 mb-2">Your cart is empty</h2>
-        <p className="text-gray-600 mb-6">Looks like you haven't added anything to your cart yet.</p>
+        <p className="text-gray-600 mb-6">Looks like you haven&apos;t added anything to your cart yet.</p>
         <Link href="/products">
           <Button>Start Shopping</Button>
         </Link>

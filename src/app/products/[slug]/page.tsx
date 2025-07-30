@@ -34,7 +34,7 @@ interface Product {
   }[]
 }
 
-export default function ProductDetailPage({ params }: { params: { slug: string } }) {
+export default function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const [product, setProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(true)
   const [quantity, setQuantity] = useState(1)
@@ -45,7 +45,8 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const response = await fetch(`/api/public/products/${params.slug}`)
+        const resolvedParams = await params
+        const response = await fetch(`/api/public/products/${resolvedParams.slug}`)
         const data = await response.json()
         if (data.success) {
           setProduct(data.data)
@@ -58,7 +59,7 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
     }
 
     fetchProduct()
-  }, [params.slug])
+  }, [])
 
   const handleAddToCart = async () => {
     if (!user) {

@@ -11,9 +11,12 @@ export interface JWTPayload {
 
 // For Node.js runtime (API routes)
 export function signToken(payload: JWTPayload): string {
-  return jwt.sign(payload, process.env.JWT_SECRET!, {
-    expiresIn: process.env.JWT_EXPIRES_IN || '7d',
-  })
+  const secret = process.env.JWT_SECRET!
+  const options = {
+    expiresIn: (process.env.JWT_EXPIRES_IN || '7d') as string,
+  }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return jwt.sign(payload as any, secret, options as any)
 }
 
 // For Edge Runtime compatible JWT verification (middleware)
@@ -27,7 +30,7 @@ export async function verifyTokenEdge(token: string): Promise<JWTPayload> {
       email: payload.email as string,
       role: payload.role as 'ADMIN' | 'CUSTOMER'
     }
-  } catch (error) {
+  } catch {
     throw new Error('Invalid token')
   }
 }
@@ -70,8 +73,8 @@ export async function getUserFromRequest(request: NextRequest): Promise<JWTPaylo
     const user = await verifyTokenEdge(token)
     console.log('Auth - Token verified successfully for user:', { id: user.userId, role: user.role });
     return user
-  } catch (error) {
-    console.log('Auth - Token verification failed:', error);
+  } catch {
+    console.log('Auth - Token verification failed');
     return null
   }
 }

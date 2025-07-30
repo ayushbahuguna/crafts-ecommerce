@@ -28,7 +28,11 @@ interface RazorpayOptions {
   name: string
   description: string
   order_id: string
-  handler: (response: any) => void
+  handler: (response: {
+    razorpay_order_id: string;
+    razorpay_payment_id: string;
+    razorpay_signature: string;
+  }) => void
   prefill: {
     name: string
     email: string
@@ -78,7 +82,7 @@ export default function CheckoutPage() {
             setSelectedAddress(defaultAddress.id)
           }
         }
-      } catch (err) {
+      } catch {
         setError('Failed to load addresses')
       } finally {
         setLoading(false)
@@ -143,7 +147,7 @@ export default function CheckoutPage() {
             } else {
               setError(verificationData.error || 'Payment verification failed')
             }
-          } catch (err) {
+          } catch {
             setError('An error occurred during payment verification.')
           }
         },
@@ -163,8 +167,9 @@ export default function CheckoutPage() {
       const rzp = new window.Razorpay(options)
       rzp.open()
 
-    } catch (err: any) {
-      setError(err.message || 'An error occurred while placing the order.')
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred while placing the order.'
+      setError(errorMessage)
     }
   }
 

@@ -5,16 +5,17 @@ import { createResponse, createErrorResponse } from '@/lib/api-response'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
-    const user = getUserFromRequest(request)
+    const user = await getUserFromRequest(request)
     if (!user || user.role !== 'ADMIN') {
       return createErrorResponse('Unauthorized', 401)
     }
 
     const coupon = await prisma.coupon.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         _count: {
           select: {
@@ -37,10 +38,11 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
-    const user = getUserFromRequest(request)
+    const user = await getUserFromRequest(request)
     if (!user || user.role !== 'ADMIN') {
       return createErrorResponse('Unauthorized', 401)
     }
@@ -66,7 +68,7 @@ export async function PUT(
     const existingCoupon = await prisma.coupon.findFirst({
       where: {
         AND: [
-          { id: { not: params.id } },
+          { id: { not: id } },
           { code: code.toUpperCase() }
         ]
       }
@@ -77,7 +79,7 @@ export async function PUT(
     }
 
     const coupon = await prisma.coupon.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         code: code.toUpperCase(),
         description,
@@ -101,17 +103,18 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
-    const user = getUserFromRequest(request)
+    const user = await getUserFromRequest(request)
     if (!user || user.role !== 'ADMIN') {
       return createErrorResponse('Unauthorized', 401)
     }
 
     // Check if coupon is used in any orders
     const ordersCount = await prisma.order.count({
-      where: { couponId: params.id }
+      where: { couponId: id }
     })
 
     if (ordersCount > 0) {
@@ -119,7 +122,7 @@ export async function DELETE(
     }
 
     await prisma.coupon.delete({
-      where: { id: params.id }
+      where: { id }
     })
 
     return createResponse({ message: 'Coupon deleted successfully' })
