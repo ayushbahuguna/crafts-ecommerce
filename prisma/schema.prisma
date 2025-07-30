@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -70,12 +70,12 @@ model Product {
   id           String   @id @default(cuid())
   name         String
   slug         String   @unique
-  description  String   @db.Text
+  description  String
   price        Float
   comparePrice Float?
   sku          String   @unique
   stock        Int      @default(0)
-  images       String   @db.Text // JSON array of image URLs
+  images       String // JSON array of image URLs
   categoryId   String
   isActive     Boolean  @default(true)
   isFeatured   Boolean  @default(false)

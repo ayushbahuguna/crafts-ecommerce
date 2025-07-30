@@ -1,44 +1,60 @@
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
-import { getUserFromRequest } from './lib/auth'
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { getUserFromRequest } from './lib/auth';
 
 export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl
+  const { pathname } = request.nextUrl;
 
-  // Check if the request is for admin routes
-  if (pathname.startsWith('/api/admin/')) {
-    const user = getUserFromRequest(request)
-    
+  // Admin route protection
+  if (pathname.startsWith('/api/admin') || pathname.startsWith('/admin')) {
+    const user = getUserFromRequest(request);
+
     if (!user) {
-      return NextResponse.json(
-        { success: false, error: 'Authentication required' },
-        { status: 401 }
-      )
+      if (pathname.startsWith('/api')) {
+        return NextResponse.json(
+          { success: false, error: 'Authentication required' },
+          { status: 401 }
+        );
+      }
+      return NextResponse.redirect(new URL('/login', request.url));
     }
-    
+
     if (user.role !== 'ADMIN') {
-      return NextResponse.json(
-        { success: false, error: 'Admin access required' },
-        { status: 403 }
-      )
+      if (pathname.startsWith('/api')) {
+        return NextResponse.json(
+          { success: false, error: 'Admin access required' },
+          { status: 403 }
+        );
+      }
+      return NextResponse.redirect(new URL('/', request.url));
     }
   }
 
-  // Check if the request is for customer routes
-  if (pathname.startsWith('/api/customer/')) {
-    const user = getUserFromRequest(request)
-    
+  // Customer route protection
+  if (pathname.startsWith('/api/customer') || pathname.startsWith('/profile') || pathname.startsWith('/orders') || pathname.startsWith('/checkout')) {
+    const user = getUserFromRequest(request);
+
     if (!user) {
-      return NextResponse.json(
-        { success: false, error: 'Authentication required' },
-        { status: 401 }
-      )
+      if (pathname.startsWith('/api')) {
+        return NextResponse.json(
+          { success: false, error: 'Authentication required' },
+          { status: 401 }
+        );
+      }
+      return NextResponse.redirect(new URL('/login', request.url));
     }
   }
 
-  return NextResponse.next()
+  return NextResponse.next();
 }
 
 export const config = {
-  matcher: ['/api/admin/:path*', '/api/customer/:path*']
-}
+  matcher: [
+    '/api/admin/:path*',
+    '/admin/:path*',
+    '/api/customer/:path*',
+    '/profile/:path*',
+    '/orders/:path*',
+    '/checkout/:path*',
+  ],
+};
